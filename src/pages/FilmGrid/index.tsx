@@ -1,23 +1,23 @@
-import Lucide from "../../base-components/Lucide";
-import {Dialog, Popover} from "../../base-components/Headless";
-import Pagination from "../../base-components/Pagination";
-import { FormInput, FormSelect } from "../../base-components/Form";
-import Button from "../../base-components/Button";
-import { useAppDispatch } from "../../stores/hooks";
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import { TypeCommon } from "../../types/common";
-import { movieListThunk } from "../../stores/movie/movie.slice";
-import { MovieList, MovieShortInfo, PageCursor } from "../../types";
-import {Link} from "react-router-dom";
-import {Preview} from "../../base-components/PreviewComponent";
+import Lucide from '../../base-components/Lucide';
+import { Dialog, Popover } from '../../base-components/Headless';
+import Pagination from '../../base-components/Pagination';
+import { FormInput, FormSelect } from '../../base-components/Form';
+import Button from '../../base-components/Button';
+import { useAppDispatch } from '../../stores/hooks';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { TypeCommon } from '../../types/common';
+import { movieListThunk } from '../../stores/movie/movie.slice';
+import { MovieList, MovieShortInfo, PageCursor } from '../../types';
+import { Link } from 'react-router-dom';
+import { Preview } from '../../base-components/PreviewComponent';
 
 function Main() {
   const dispatch = useAppDispatch();
   const [movies, setMovies] = useState<MovieShortInfo[]>([]);
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState<PageCursor>();
-  const [status, setStatus] = useState<string>("");
-  const [cursor, setCursor] = useState<string>("");
+  const [status, setStatus] = useState<string>('');
+  const [cursor, setCursor] = useState<string>('');
   const [deleteModalPreview, setDeleteModalPreview] = useState(false);
   const deleteButtonRef = useRef(null);
 
@@ -28,7 +28,7 @@ function Main() {
       );
       return res.payload || [];
     } catch (error: TypeCommon) {
-      console.error("🚀 ~ fetchMovies ~ error:", error);
+      console.error('🚀 ~ fetchMovies ~ error:', error);
       return [];
     }
   }, [dispatch, status, limit, cursor]);
@@ -37,7 +37,7 @@ function Main() {
     fetchMovies().then((result) => {
       setMovies(result.data);
       setPage(result.pagination);
-   });
+    });
   }, [dispatch, status, limit, cursor]);
 
   return (
@@ -49,10 +49,10 @@ function Main() {
           </div>
           <div className="flex flex-col sm:flex-row gap-x-3 gap-y-2 md:ml-auto">
             <Link
-                to="/add-film"
-                className="px-2 py-2 group-[.mode--light]:!bg-white/[0.12] group-[.mode--light]:!text-slate-200 group-[.mode--light]:!border-transparent inline-flex items-center justify-center"
+              to="/add-film"
+              className="px-2 py-2 group-[.mode--light]:!bg-white/[0.12] group-[.mode--light]:!text-slate-200 group-[.mode--light]:!border-transparent inline-flex items-center justify-center"
             >
-              <Lucide icon="PenLine" className="stroke-[1.3] w-4 h-4 mr-2" />{" "}
+              <Lucide icon="PenLine" className="stroke-[1.3] w-4 h-4 mr-2" />
               Add New Film
             </Link>
           </div>
@@ -125,7 +125,7 @@ function Main() {
             </div>
             <div className="overflow-hidden">
               <div className="grid grid-cols-12 px-5 -mx-5 border-dashed border-y">
-                {movies.map((movie, key) => (
+                {movies?.map((movie, key) => (
                   <div
                     key={key}
                     className="col-span-12 sm:col-span-6 xl:col-span-3 border-dashed border-slate-300/80 [&:nth-child(4n)]:border-r-0 px-5 py-5 [&:nth-last-child(-n+4)]:border-b-0 border-r border-b flex flex-col"
@@ -138,13 +138,13 @@ function Main() {
                       />
                       <span
                         className={`absolute top-0 z-10 px-2.5 py-1 m-5 text-xs text-white rounded-lg font-medium border-white/20 border ${
-                          movie.status === "ONGOING"
-                            ? "bg-green-500"
-                            : movie.status === "UPCOMING"
-                            ? "bg-yellow-500"
-                            : movie.status === "ENDED"
-                            ? "bg-red-500"
-                            : ""
+                          movie.status === 'ONGOING'
+                            ? 'bg-green-500'
+                            : movie.status === 'UPCOMING'
+                            ? 'bg-yellow-500'
+                            : movie.status === 'ENDED'
+                            ? 'bg-red-500'
+                            : ''
                         }`}
                       >
                         {movie.status}
@@ -157,11 +157,13 @@ function Main() {
                           {movie.name}
                         </a>
                         {movie.movie_length !== 0 ? (
-                            <span className="mt-3 text-xs text-white/80">
-                              {movie.movie_length} minutes
-                            </span>
+                          <span className="mt-3 text-xs text-white/80">
+                            {movie.movie_length} minutes
+                          </span>
                         ) : (
-                            <span className="mt-3 text-xs text-white/80">&nbsp;</span>
+                          <span className="mt-3 text-xs text-white/80">
+                            &nbsp;
+                          </span>
                         )}
                       </div>
                     </div>
@@ -173,8 +175,8 @@ function Main() {
                             <div className="flex items-center text-xs font-medium rounded-md text-success bg-success/10 border border-success/10 px-1.5 py-px">
                               <span className="-mt-px">
                                 {movie.codes
-                                  .map((code) => code.replace("CODE_", ""))
-                                  .join(", ")}
+                                  .map((code) => code.replace('CODE_', ''))
+                                  .join(', ')}
                               </span>
                             </div>
                           </div>
@@ -184,12 +186,12 @@ function Main() {
                           <div className="ml-auto">
                             <div className="flex items-center">
                               <div className="ml-1 text-xs text-slate-500">
-                                {movie.rating_code === "RATING_UNSPECIFIED"
-                                  ? "UND"
-                                  : movie.rating_code === "NC17"
-                                  ? "NC-17"
-                                  : movie.rating_code === "PG13"
-                                  ? "PG-13"
+                                {movie.rating_code === 'RATING_UNSPECIFIED'
+                                  ? 'UND'
+                                  : movie.rating_code === 'NC17'
+                                  ? 'NC-17'
+                                  : movie.rating_code === 'PG13'
+                                  ? 'PG-13'
                                   : movie.rating_code}
                               </div>
                             </div>
@@ -208,72 +210,80 @@ function Main() {
                       </div>
                       <div className="flex items-center">
                         <Link
-                            className="flex items-center mr-auto text-primary"
-                            to={`/film/${movie.id}`}
+                          className="flex items-center mr-auto text-primary"
+                          to={`/film/${movie.id}`}
                         >
                           <Lucide
-                              icon="KanbanSquare"
-                              className="w-4 h-4 stroke-[1.3] mr-1.5"
-                          />{" "}
+                            icon="KanbanSquare"
+                            className="w-4 h-4 stroke-[1.3] mr-1.5"
+                          />{' '}
                           View
                         </Link>
                         <a className="flex items-center mr-3" href="#">
                           <Lucide
-                              icon="CheckSquare"
-                              className="w-4 h-4 stroke-[1.3] mr-1.5"
-                          />{" "}
+                            icon="CheckSquare"
+                            className="w-4 h-4 stroke-[1.3] mr-1.5"
+                          />{' '}
                           Edit
                         </a>
                         <Preview>
-                        <button
+                          <button
                             className="flex items-center text-danger"
                             onClick={(event: React.MouseEvent) => {
                               event.preventDefault();
                               setDeleteModalPreview(true);
                             }}
-                        >
-                          <Lucide
+                          >
+                            <Lucide
                               icon="Trash2"
                               className="w-4 h-4 stroke-[1.3] mr-1.5"
-                          />{" "}
-                          Delete
-                        </button>
-                        <Dialog open={deleteModalPreview} onClose={() => {
-                          setDeleteModalPreview(false);
-                        }}
-                                initialFocus={deleteButtonRef}
-                        >
-                          <Dialog.Panel>
-                            <div className="p-5 text-center">
-                              <Lucide icon="XCircle" className="w-16 h-16 mx-auto mt-3 text-danger"/>
-                              <div className="mt-5 text-3xl">Are you sure?</div>
-                              <div className="mt-2 text-slate-500">
-                                Do you really want to delete these records? <br/>
-                                This process cannot be undone.
+                            />{' '}
+                            Delete
+                          </button>
+                          <Dialog
+                            open={deleteModalPreview}
+                            onClose={() => {
+                              setDeleteModalPreview(false);
+                            }}
+                            initialFocus={deleteButtonRef}
+                          >
+                            <Dialog.Panel>
+                              <div className="p-5 text-center">
+                                <Lucide
+                                  icon="XCircle"
+                                  className="w-16 h-16 mx-auto mt-3 text-danger"
+                                />
+                                <div className="mt-5 text-3xl">
+                                  Are you sure?
+                                </div>
+                                <div className="mt-2 text-slate-500">
+                                  Do you really want to delete these records?{' '}
+                                  <br />
+                                  This process cannot be undone.
+                                </div>
                               </div>
-                            </div>
-                            <div className="px-5 pb-8 text-center">
-                              <Button
+                              <div className="px-5 pb-8 text-center">
+                                <Button
                                   type="button"
                                   variant="outline-secondary"
                                   onClick={() => {
                                     setDeleteModalPreview(false);
                                   }}
                                   className="w-24 mr-2"
-                              >
-                                Cancel
-                              </Button>
-                              <Button
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
                                   type="button"
                                   variant="danger"
                                   className="w-24 ml-2"
                                   ref={deleteButtonRef}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </Dialog.Panel>
-                        </Dialog>
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </Dialog.Panel>
+                          </Dialog>
                         </Preview>
                       </div>
                     </div>
@@ -285,32 +295,32 @@ function Main() {
               <Pagination className="flex-1 w-full mr-auto sm:w-auto">
                 <Pagination.Link>
                   <button
-                    onClick={() => setCursor(page?.prevCursor || "")}
-                    disabled={!page?.prevCursor || page.prevCursor === ""}
+                    onClick={() => setCursor(page?.prevCursor || '')}
+                    disabled={!page?.prevCursor || page.prevCursor === ''}
                   >
                     <Lucide
                       icon="ChevronLeft"
                       size={100}
                       color={
-                        !page?.prevCursor || page.prevCursor === ""
-                          ? "grey"
-                          : "red"
+                        !page?.prevCursor || page.prevCursor === ''
+                          ? 'grey'
+                          : 'red'
                       }
                     />
                   </button>
                 </Pagination.Link>
                 <Pagination.Link>
                   <button
-                    onClick={() => setCursor(page?.nextCursor || "")}
-                    disabled={!page?.nextCursor || page.nextCursor === ""}
+                    onClick={() => setCursor(page?.nextCursor || '')}
+                    disabled={!page?.nextCursor || page.nextCursor === ''}
                   >
                     <Lucide
                       icon="ChevronRight"
                       size={100}
                       color={
-                        !page?.nextCursor || page.nextCursor === ""
-                          ? "grey"
-                          : "red"
+                        !page?.nextCursor || page.nextCursor === ''
+                          ? 'grey'
+                          : 'red'
                       }
                     />
                   </button>
@@ -321,7 +331,7 @@ function Main() {
                 value={limit}
                 onChange={(e) => {
                   setLimit(parseInt(e.target.value));
-                  setCursor("");
+                  setCursor('');
                 }}
               >
                 <option value={10}>10</option>

@@ -28,7 +28,7 @@ export interface MovieDetail {
   rating_code: string;
   genres: string[];
   trailer: string;
-  movieLength: number;
+  movie_length: number;
   director: string;
   language: string;
   actors: Actor[];

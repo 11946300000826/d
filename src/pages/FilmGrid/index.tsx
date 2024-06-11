@@ -131,6 +131,7 @@ function Main() {
                     className="col-span-12 sm:col-span-6 xl:col-span-3 border-dashed border-slate-300/80 [&:nth-child(4n)]:border-r-0 px-5 py-5 [&:nth-last-child(-n+4)]:border-b-0 border-r border-b flex flex-col"
                   >
                     <div className="overflow-hidden rounded-lg h-[30rem] image-fit before:block before:absolute before:w-full before:h-full before:top-0 before:left-0 before:z-10 before:bg-gradient-to-t before:from-slate-900/90 before:to-black/20">
+
                       <img
                         className="rounded-md"
                         src={movie.thumbnail}
@@ -150,12 +151,12 @@ function Main() {
                         {movie.status}
                       </span>
                       <div className="absolute bottom-0 z-10 w-full px-5 pb-6 text-white">
-                        <a
-                          href=""
-                          className="block text-lg font-medium truncate"
+                        <Link
+                            className="block text-lg font-medium truncate"
+                            to={`/film/${movie.id}`}
                         >
                           {movie.name}
-                        </a>
+                        </Link>
                         {movie.movie_length !== 0 ? (
                           <span className="mt-3 text-xs text-white/80">
                             {movie.movie_length} minutes

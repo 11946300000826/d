@@ -105,11 +105,11 @@ function Main() {
                           .join(", ")}
                       </span>
                     </div>
-                    {movie?.movieLength != 0 && (
+                    {movie?.movie_length != 0 && (
                         <div className="py-3">
                       <span
                           className="items-center px-3 py-2 mr-1 border-2 rounded-full text-lg font-bold border-success text-success dark:border-success">
-                          <FontAwesomeIcon icon={faHourglassEnd}/> {movie?.movieLength} minutes
+                          <FontAwesomeIcon icon={faHourglassEnd}/> {movie?.movie_length} minutes
                       </span>
                         </div>
                     )}
@@ -124,7 +124,7 @@ function Main() {
                         </div>
                     )}
                   </div>
-                  <div className="flex-4 px-8">
+                  <div className="w-full px-8">
                     <div
                         className="border rounded-[0.6rem] dark:border-darkmode-400 relative mt-7 mb-4 border-slate-200/80">
                       <div className="absolute left-0 px-3 ml-4 -mt-2 text-xs uppercase bg-white text-slate-500">
@@ -146,6 +146,22 @@ function Main() {
                     <InfoItem title="Genres"
                               placeholder={`${movie?.genres?.map((genre) => genreNames[genre]).join(", ") || ''}`}
                               id="regular-form-7"/>
+                    <div className="mt-3">
+                      <h3 className="mt-3 text-lg py-3 font-medium leading-none">
+                        Language(s)
+                      </h3>
+                      {movie?.language.split(";").map(
+                          (e) => {
+                            return (
+                                <div className={"py-2"}>
+                                  <FormInput id={id} type="text"
+                                             style={{fontSize: '18px'}}
+                                             placeholder={e} disabled/>
+                                </div>
+                            );
+                          }
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -174,7 +190,7 @@ function Main() {
                       <iframe
                           width="560"
                           height="315"
-                          src={movie?.trailer}
+                          src={`https://www.youtube.com/embed/` + movie?.trailer.split("/").pop()}
                           title={movie?.name}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen

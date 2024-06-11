@@ -1,7 +1,7 @@
 import Lucide from '../../base-components/Lucide';
 import { Dialog, Popover } from '../../base-components/Headless';
 import Pagination from '../../base-components/Pagination';
-import { FormInput, FormSelect } from '../../base-components/Form';
+import {FormCheck, FormInput, FormSelect} from '../../base-components/Form';
 import Button from '../../base-components/Button';
 import { useAppDispatch } from '../../stores/hooks';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,6 +14,7 @@ import { Preview } from '../../base-components/PreviewComponent';
 function Main() {
   const dispatch = useAppDispatch();
   const [movies, setMovies] = useState<MovieShortInfo[]>([]);
+  const [order, setOrder] = useState<string>('desc');
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState<PageCursor>();
   const [status, setStatus] = useState<string>('');
@@ -24,21 +25,21 @@ function Main() {
   const fetchMovies: () => Promise<MovieList> = useCallback(async () => {
     try {
       const res: TypeCommon = await dispatch(
-        movieListThunk({ status: status, limit, cursor: cursor })
+        movieListThunk({ status, limit, order, cursor})
       );
       return res.payload || [];
     } catch (error: TypeCommon) {
       console.error('🚀 ~ fetchMovies ~ error:', error);
       return [];
     }
-  }, [dispatch, status, limit, cursor]);
+  }, [dispatch, status, limit, cursor, order]);
 
   useEffect(() => {
     fetchMovies().then((result) => {
       setMovies(result.data);
       setPage(result.pagination);
     });
-  }, [dispatch, status, limit, cursor]);
+  }, [dispatch, status, limit, cursor, order]);
 
   return (
     <div className="grid grid-cols-12 gap-y-10 gap-x-6">
@@ -74,51 +75,79 @@ function Main() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-x-3 gap-y-2 sm:ml-auto">
+                <div className="flex flex-col mt-2 sm:flex-row">
+                  <FormCheck className="mr-2">
+                    <FormCheck.Input
+                        id="radio-switch-4"
+                        type="radio"
+                        name="horizontal_radio_button"
+                        value="asc"
+                        checked={order === "asc"}
+                        onChange={(e) => setOrder(e.target.value)}
+                    />
+                    <FormCheck.Label htmlFor="radio-switch-4">
+                      Oldest
+                    </FormCheck.Label>
+                  </FormCheck>
+                  <FormCheck className="mt-2 mr-2 sm:mt-0">
+                    <FormCheck.Input
+                        id="radio-switch-5"
+                        type="radio"
+                        name="horizontal_radio_button"
+                        value="desc"
+                        checked={order === "desc"}
+                        onChange={(e) => setOrder(e.target.value)}
+                    />
+                    <FormCheck.Label htmlFor="radio-switch-5">
+                      Newest
+                    </FormCheck.Label>
+                  </FormCheck>
+                </div>
                 <Popover className="inline-block">
-                  {({ close }) => (
-                    <>
-                      <Popover.Button
-                        as={Button}
-                        variant="outline-secondary"
-                        className="w-full sm:w-auto"
-                      >
-                        <Lucide
-                          icon="ArrowDownWideNarrow"
-                          className="stroke-[1.3] w-4 h-4 mr-2"
-                        />
-                        Filter
-                      </Popover.Button>
-                      <Popover.Panel placement="bottom-end">
-                        <div className="p-2">
-                          <div>
-                            <div className="text-left text-slate-500">
-                              Status
+                  {({close}) => (
+                      <>
+                        <Popover.Button
+                            as={Button}
+                            variant="outline-secondary"
+                            className="w-full sm:w-auto"
+                        >
+                          <Lucide
+                              icon="ArrowDownWideNarrow"
+                              className="stroke-[1.3] w-4 h-4 mr-2"
+                          />
+                          Filter
+                        </Popover.Button>
+                        <Popover.Panel placement="bottom-end">
+                          <div className="p-2">
+                            <div>
+                              <div className="text-left text-slate-500">
+                                Status
+                              </div>
+                              <FormSelect
+                                  className="flex-1 mt-2"
+                                  value={status}
+                                  onChange={(e) => setStatus(e.target.value)}
+                              >
+                                <option value="">All</option>
+                                <option value="ONGOING">Ongoing</option>
+                                <option value="UPCOMING">Coming</option>
+                                <option value="ENDED">Ended</option>
+                              </FormSelect>
                             </div>
-                            <FormSelect
-                              className="flex-1 mt-2"
-                              value={status}
-                              onChange={(e) => setStatus(e.target.value)}
-                            >
-                              <option value="">All</option>
-                              <option value="ONGOING">Ongoing</option>
-                              <option value="UPCOMING">Coming</option>
-                              <option value="ENDED">Ended</option>
-                            </FormSelect>
+                            <div className="flex items-center mt-4">
+                              <Button
+                                  variant="secondary"
+                                  onClick={() => {
+                                    close();
+                                  }}
+                                  className="w-32 ml-auto"
+                              >
+                                Close
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex items-center mt-4">
-                            <Button
-                              variant="secondary"
-                              onClick={() => {
-                                close();
-                              }}
-                              className="w-32 ml-auto"
-                            >
-                              Close
-                            </Button>
-                          </div>
-                        </div>
-                      </Popover.Panel>
-                    </>
+                        </Popover.Panel>
+                      </>
                   )}
                 </Popover>
               </div>
@@ -126,19 +155,20 @@ function Main() {
             <div className="overflow-hidden">
               <div className="grid grid-cols-12 px-5 -mx-5 border-dashed border-y">
                 {movies?.map((movie, key) => (
-                  <div
-                    key={key}
-                    className="col-span-12 sm:col-span-6 xl:col-span-3 border-dashed border-slate-300/80 [&:nth-child(4n)]:border-r-0 px-5 py-5 [&:nth-last-child(-n+4)]:border-b-0 border-r border-b flex flex-col"
-                  >
-                    <div className="overflow-hidden rounded-lg h-[30rem] image-fit before:block before:absolute before:w-full before:h-full before:top-0 before:left-0 before:z-10 before:bg-gradient-to-t before:from-slate-900/90 before:to-black/20">
+                    <div
+                        key={key}
+                        className="col-span-12 sm:col-span-6 xl:col-span-3 border-dashed border-slate-300/80 [&:nth-child(4n)]:border-r-0 px-5 py-5 [&:nth-last-child(-n+4)]:border-b-0 border-r border-b flex flex-col"
+                    >
+                      <div
+                          className="overflow-hidden rounded-lg h-[30rem] image-fit before:block before:absolute before:w-full before:h-full before:top-0 before:left-0 before:z-10 before:bg-gradient-to-t before:from-slate-900/90 before:to-black/20">
 
-                      <img
-                        className="rounded-md"
-                        src={movie.thumbnail}
-                        alt={movie.name}
-                      />
-                      <span
-                        className={`absolute top-0 z-10 px-2.5 py-1 m-5 text-xs text-white rounded-lg font-medium border-white/20 border ${
+                        <img
+                            className="rounded-md"
+                            src={movie.thumbnail}
+                            alt={movie.name}
+                        />
+                        <span
+                            className={`absolute top-0 z-10 px-2.5 py-1 m-5 text-xs text-white rounded-lg font-medium border-white/20 border ${
                           movie.status === 'ONGOING'
                             ? 'bg-green-500'
                             : movie.status === 'UPCOMING'

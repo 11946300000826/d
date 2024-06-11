@@ -5,40 +5,34 @@ import {
   isAnyOf,
 } from '@reduxjs/toolkit';
 import { TypeCommon } from '../../types/common';
-import { handleError } from '../../utils/common.utils';
 import {
   addMovie,
   getAllMovies,
   getMovie,
 } from '../../services/movie/movie.service';
-import { IAddMovieRequest } from '../../types/movie';
+import { IAddMovieRequest,IFetchMoviePage } from '../../types/movie';
+import {RootState} from "../store";
+import {AxiosError} from "axios";
 
 export type InitialValue = {
   loading: boolean;
-  error: object;
-  disable?: boolean;
+  error: string | undefined;
 };
 
 const initialState: InitialValue = {
-  error: {},
+  error: undefined,
   loading: false,
-  disable: false,
 };
 
-type MovieListArg = {
-  status: string;
-  limit: number;
-  cursor: string;
-};
 
 export const movieListThunk = createAsyncThunk(
   'movie/list',
-  async ({ status, limit, cursor }: MovieListArg, { rejectWithValue }) => {
+  async (payload: IFetchMoviePage, { rejectWithValue }) => {
     try {
-      const response = await getAllMovies(status, cursor, limit);
+      const response = await getAllMovies(payload);
       return response?.data;
     } catch (error) {
-      return handleError(error as TypeCommon, rejectWithValue);
+        return rejectWithValue(error);
     }
   }
 );
@@ -50,7 +44,7 @@ export const movieDetailThunk = createAsyncThunk(
       const response = await getMovie(id);
       return response?.data;
     } catch (error) {
-      return handleError(error as TypeCommon, rejectWithValue);
+      return rejectWithValue(error);
     }
   }
 );
@@ -62,54 +56,19 @@ export const addMovieThunk = createAsyncThunk(
       const response = await addMovie(payload);
       return response?.data;
     } catch (error) {
-      return handleError(error as TypeCommon, rejectWithValue);
+      return rejectWithValue(error);
     }
   }
 );
 
-// export const createUserThunk = createAsyncThunk(
-//     'user/create',
-//     async (body: ICreateUserBody, { rejectWithValue }) => {
-//         try {
-//             const response = await createUser(body);
-//             return response?.data;
-//         } catch (error) {
-//             return handleError(error as TypeCommon, rejectWithValue);
-//         }
-//     }
-// );
-//
-// export const updateUserThunk = createAsyncThunk(
-//     'user/update',
-//     async ({ id, body }: { id: string; body: Partial<ICreateUserBody> }, { rejectWithValue }) => {
-//         try {
-//             const response = await updateUser(id, body);
-//             return response?.data;
-//         } catch (error) {
-//             return handleError(error as TypeCommon, rejectWithValue);
-//         }
-//     }
-// );
-//
-// export const deleteUserThunk = createAsyncThunk(
-//     'user/update',
-//     async ({ id }: { id: string }, { rejectWithValue }) => {
-//         try {
-//             const response = await deleteUser(id);
-//             return response?.data;
-//         } catch (error) {
-//             return handleError(error as TypeCommon, rejectWithValue);
-//         }
-//     }
-// );
 
-export const movieSlice: TypeCommon = createSlice({
-  name: 'user',
+
+
+export const movieSlice = createSlice({
+  name: 'movie',
   initialState,
   reducers: {
-    setIsAutoSaveRunning: (state, action: PayloadAction<boolean>) => {
-      state.disable = action.payload;
-    },
+
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -117,15 +76,12 @@ export const movieSlice: TypeCommon = createSlice({
         movieListThunk.fulfilled,
         movieDetailThunk.fulfilled,
         addMovieThunk.fulfilled
-        // createUserThunk.fulfilled,
-        // updateUserThunk.fulfilled,
-        // deleteUserThunk.fulfilled
       ),
       (state) => {
         return {
           ...state,
           loading: false,
-          error: {},
+          error: undefined,
         };
       }
     );
@@ -134,17 +90,12 @@ export const movieSlice: TypeCommon = createSlice({
         movieListThunk.rejected,
         movieDetailThunk.rejected,
         addMovieThunk.rejected
-        // createUserThunk.rejected,
-        // updateUserThunk.rejected,
-        // deleteUserThunk.rejected
       ),
       (state, action) => {
         return {
           ...state,
           loading: false,
-          error: {
-            message: action.payload,
-          },
+          error: (action.payload as AxiosError).message,
         };
       }
     );
@@ -153,9 +104,6 @@ export const movieSlice: TypeCommon = createSlice({
         movieListThunk.pending,
         movieDetailThunk.pending,
         addMovieThunk.pending
-        // createUserThunk.pending,
-        // updateUserThunk.pending,
-        // deleteUserThunk.fulfilled
       ),
       (state) => {
         return {
@@ -169,9 +117,7 @@ export const movieSlice: TypeCommon = createSlice({
         movieListThunk.pending,
         movieDetailThunk.pending,
         addMovieThunk.pending
-        // createUserThunk.pending,
-        // updateUserThunk.pending,
-        // deleteUserThunk.pending
+
       ),
       (state) => {
         return {
@@ -183,6 +129,8 @@ export const movieSlice: TypeCommon = createSlice({
   },
 });
 
-export const { setIsAutoSaveRunning } = movieSlice.actions;
+
+export const movieSelector = (state: RootState) => state.rootReducer.movieReducer;
+
 
 export default movieSlice.reducer;

@@ -2,12 +2,16 @@ import Lucide from '../../base-components/Lucide';
 import TomSelect from '../../base-components/TomSelect';
 import { FormInput, FormSelect} from '../../base-components/Form';
 import Button from '../../base-components/Button';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Litepicker from '../../base-components/Litepicker';
 import {uploadFile} from '../../services/upload/upload.services';
 import ImageUploader from './component';
-import {addMovieThunk} from '../../stores/movie/movie.slice';
-import {useAppDispatch} from '../../stores/hooks';
+import {addMovieThunk, movieSelector} from '../../stores/movie/movie.slice';
+import {useAppDispatch, useAppSelector} from '../../stores/hooks';
+import Notification, {NotificationElement} from "../../base-components/Notification";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTriangleExclamation} from "@fortawesome/free-solid-svg-icons";
+import {useSelector} from "react-redux";
 
 const statusValue = ['ONGOING', 'UPCOMING'];
 
@@ -83,7 +87,12 @@ function Main() {
     const [actor, setActor] = useState<string>('');
     const [originalLang, setOriginalLang] = useState<string>('');
     const [vLang, setVLang] = useState<string[]>([]);
+    const [error, setError] = useState<string | undefined>(undefined);
     const dispatch = useAppDispatch();
+    const bNotification = useRef<NotificationElement>();
+    const selectorMovie = useAppSelector(movieSelector);
+
+
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>,
         setFile: React.Dispatch<React.SetStateAction<File | null>>,
@@ -127,6 +136,10 @@ function Main() {
         setLang(newLang.join(";"));
     }, [originalLang, vLang]);
 
+    useEffect(() => {
+       setError(selectorMovie.error);
+    }, [selectorMovie]);
+
     const handlePosterFileChange = (event: React.ChangeEvent<HTMLInputElement>) =>
         handleFileChange(event, setPosterFile, setPoster);
 
@@ -164,11 +177,19 @@ function Main() {
                 rating_code: ratingCode,
                 length,
             };
-            const res = await dispatch(addMovieThunk(payload));
+            const actionResult = await dispatch(addMovieThunk(payload));
+            if (addMovieThunk.fulfilled.match(actionResult)) {
+            } else if (addMovieThunk.rejected.match(actionResult)) {
+                bNotification.current?.showToast();
+                return Promise.reject(actionResult.payload);
+            }
         } catch (error) {
             return Promise.reject(error);
         }
     };
+
+
+
     return (
         <div className="grid grid-cols-12 gap-y-10 gap-x-6">
             <div className="col-span-12">
@@ -179,6 +200,24 @@ function Main() {
                 </div>
                 <div className="mt-3.5 grid grid-cols-12 xl:grid-cols-10 gap-y-7 lg:gap-y-10 gap-x-6">
                     <div className="relative flex flex-col col-span-12 lg:col-span-9 xl:col-span-8 gap-y-7">
+                        <div className="flex h-[40rem] p-5 box box--stacked max-h-[500px]">
+                            <Notification
+                                getRef={(el) => {
+                                    bNotification.current = el;
+                                }}
+                                options={{
+                                    duration: 3000,
+                                }}
+                                className="flex"
+                            >
+                                <FontAwesomeIcon icon={faTriangleExclamation} className="text-danger" size="2x"/>
+                                <div className="ml-4 mr-4">
+                                    <div className="mt-1">
+                                        Error: {error}
+                                    </div>
+                                </div>
+                            </Notification>
+                        </div>
                         <div className="flex flex-col p-5 box box--stacked">
                             <div className="p-5 border rounded-[0.6rem] border-slate-200/60 dark:border-darkmode-400">
                                 <div
@@ -189,289 +228,289 @@ function Main() {
                                     />
                                     Film Information
                                 </div>
-                              <div className="mt-5">
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Movie Name</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                <div className="mt-5">
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Movie Name</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <FormInput
+                                                type="text"
+                                                placeholder="Movie name"
+                                                value={movieName}
+                                                onChange={(e) => {
+                                                    setMovieName(e.target.value);
+                                                }}
+                                            />
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <FormInput
-                                        type="text"
-                                        placeholder="Movie name"
-                                        value={movieName}
-                                        onChange={(e) => {
-                                          setMovieName(e.target.value);
-                                        }}
-                                    />
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Movie Length</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Movie Length</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <FormInput
+                                                type="number"
+                                                placeholder="Movie name"
+                                                value={length}
+                                                onChange={(e) => {
+                                                    setLength(parseInt(e.target.value));
+                                                }}
+                                            />
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <FormInput
-                                        type="number"
-                                        placeholder="Movie name"
-                                        value={length}
-                                        onChange={(e) => {
-                                          setLength(parseInt(e.target.value) );
-                                        }}
-                                    />
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Trailer</div>
-                                      </div>
-                                    </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <FormInput
-                                        type="text"
-                                        placeholder="Example: https://www.youtube.com/watch?v=Yug8gbDd5EQ"
-                                        value={trailer}
-                                        onChange={(e) => {
-                                          setTrailer(e.target.value);
-                                        }}
-                                    />
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">TMDB</div>
-                                      </div>
-                                    </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <FormInput
-                                        type="text"
-                                        placeholder="Example: 1148677 [https://www.themoviedb.org/movie/1148677]"
-                                        value={tmdb}
-                                        onChange={(e) => {
-                                          setTmdb(e.target.value);
-                                        }}
-                                    />
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Status</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Trailer</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <FormInput
+                                                type="text"
+                                                placeholder="Example: https://www.youtube.com/watch?v=Yug8gbDd5EQ"
+                                                value={trailer}
+                                                onChange={(e) => {
+                                                    setTrailer(e.target.value);
+                                                }}
+                                            />
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <FormSelect
-                                        id="category"
-                                        value={status}
-                                        onChange={(e) => setStatus(e.target.value)}
-                                    >
-                                      {statusValue.map((s) => (
-                                          <option key={s} value={s}>
-                                            {s}
-                                          </option>
-                                      ))}
-                                    </FormSelect>
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Genres</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">TMDB</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <FormInput
+                                                type="text"
+                                                placeholder="Example: 1148677 [https://www.themoviedb.org/movie/1148677]"
+                                                value={tmdb}
+                                                onChange={(e) => {
+                                                    setTmdb(e.target.value);
+                                                }}
+                                            />
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <TomSelect
-                                        value={genres}
-                                        onChange={setGenres}
-                                        options={{
-                                          placeholder: '',
-                                        }}
-                                        className="w-full"
-                                        multiple
-                                    >
-                                      {genreOptions.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                      ))}
-                                    </TomSelect>
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Codes</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Status</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <FormSelect
+                                                id="category"
+                                                value={status}
+                                                onChange={(e) => setStatus(e.target.value)}
+                                            >
+                                                {statusValue.map((s) => (
+                                                    <option key={s} value={s}>
+                                                        {s}
+                                                    </option>
+                                                ))}
+                                            </FormSelect>
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <TomSelect
-                                        value={codes}
-                                        onChange={setCodes}
-                                        options={{
-                                          placeholder: '',
-                                        }}
-                                        className="w-full"
-                                        multiple
-                                    >
-                                      {codeOptions.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                      ))}
-                                    </TomSelect>
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Rating Code</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Genres</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <TomSelect
+                                                value={genres}
+                                                onChange={setGenres}
+                                                options={{
+                                                    placeholder: '',
+                                                }}
+                                                className="w-full"
+                                                multiple
+                                            >
+                                                {genreOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </TomSelect>
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <TomSelect
-                                        value={ratingCode}
-                                        onChange={setRatingCode}
-                                        options={{
-                                          placeholder: '',
-                                        }}
-                                        className="w-full"
-                                        multiple={false}
-                                    >
-                                      {ratingCodeOptions.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                      ))}
-                                    </TomSelect>
-                                  </div>
-                                </div>
-                                <div
-                                    className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
-                                  <label
-                                      className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
-                                    <div className="text-left">
-                                      <div className="flex items-center">
-                                        <div className="font-medium">Release Date</div>
-                                        <div
-                                            className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
-                                          Required
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Codes</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <TomSelect
+                                                value={codes}
+                                                onChange={setCodes}
+                                                options={{
+                                                    placeholder: '',
+                                                }}
+                                                className="w-full"
+                                                multiple
+                                            >
+                                                {codeOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </TomSelect>
                                         </div>
-                                      </div>
                                     </div>
-                                  </label>
-                                  <div className="flex-1 w-full mt-3 xl:mt-0">
-                                    <Litepicker
-                                        value={date}
-                                        onChange={(e) => {
-                                          setDate(e);
-                                        }}
-                                        options={{
-                                          autoApply: false,
-                                          showWeekNumbers: true,
-                                          dropdowns: {
-                                            minYear: new Date().getFullYear(),
-                                            maxYear: null,
-                                            months: true,
-                                            years: true,
-                                          },
-                                        }}
-                                        className="w-full"
-                                    />
-                                  </div>
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Rating Code</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <TomSelect
+                                                value={ratingCode}
+                                                onChange={setRatingCode}
+                                                options={{
+                                                    placeholder: '',
+                                                }}
+                                                className="w-full"
+                                                multiple={false}
+                                            >
+                                                {ratingCodeOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </TomSelect>
+                                        </div>
+                                    </div>
+                                    <div
+                                        className="flex-col block pt-5 mt-5 xl:items-center sm:flex xl:flex-row first:mt-0 first:pt-0">
+                                        <label
+                                            className="inline-block mb-2 sm:mb-0 sm:mr-5 sm:text-right xl:w-60 xl:mr-14">
+                                            <div className="text-left">
+                                                <div className="flex items-center">
+                                                    <div className="font-medium">Release Date</div>
+                                                    <div
+                                                        className="ml-2.5 px-2 py-0.5 bg-slate-100 text-slate-500 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md border border-slate-200">
+                                                        Required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div className="flex-1 w-full mt-3 xl:mt-0">
+                                            <Litepicker
+                                                value={date}
+                                                onChange={(e) => {
+                                                    setDate(e);
+                                                }}
+                                                options={{
+                                                    autoApply: false,
+                                                    showWeekNumbers: true,
+                                                    dropdowns: {
+                                                        minYear: new Date().getFullYear(),
+                                                        maxYear: null,
+                                                        months: true,
+                                                        years: true,
+                                                    },
+                                                }}
+                                                className="w-full"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                              </div>
                             </div>
                         </div>
-                      <div
-                          id="uploadImageSection"
-                          className="flex flex-col p-5 box box--stacked"
-                      >
-                        <div className="p-5 border rounded-[0.6rem] border-slate-200/80 dark:border-darkmode-400">
-                          <div
-                              className="flex items-center pb-5 text-[0.94rem] font-medium border-b border-slate-200/80 dark:border-darkmode-400">
-                            <Lucide
-                                icon="ChevronDown"
-                                className="w-5 h-5 stroke-[1.3] mr-2"
-                            />{' '}
-                            Upload Image
-                          </div>
-                          <div className="mt-5">
-                            <ImageUploader
-                                title={'Poster'}
-                                image={poster}
-                                setImage={setPoster}
-                                setFile={setPosterFile}
-                                handleFileChange={handlePosterFileChange}
-                            />
-                            <ImageUploader
-                                title={'Thumbnail'}
-                                image={thumbnail}
-                                setImage={setThumbnail}
-                                setFile={setThumbnailFile}
-                                handleFileChange={handleThumbnailFileChange}
-                            />
-                          </div>
+                        <div
+                            id="uploadImageSection"
+                            className="flex flex-col p-5 box box--stacked"
+                        >
+                            <div className="p-5 border rounded-[0.6rem] border-slate-200/80 dark:border-darkmode-400">
+                                <div
+                                    className="flex items-center pb-5 text-[0.94rem] font-medium border-b border-slate-200/80 dark:border-darkmode-400">
+                                    <Lucide
+                                        icon="ChevronDown"
+                                        className="w-5 h-5 stroke-[1.3] mr-2"
+                                    />{' '}
+                                    Upload Image
+                                </div>
+                                <div className="mt-5">
+                                    <ImageUploader
+                                        title={'Poster'}
+                                        image={poster}
+                                        setImage={setPoster}
+                                        setFile={setPosterFile}
+                                        handleFileChange={handlePosterFileChange}
+                                    />
+                                    <ImageUploader
+                                        title={'Thumbnail'}
+                                        image={thumbnail}
+                                        setImage={setThumbnail}
+                                        setFile={setThumbnailFile}
+                                        handleFileChange={handleThumbnailFileChange}
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="flex flex-col p-5 box box--stacked">
@@ -509,22 +548,22 @@ function Main() {
                                                     value={originalLang}
                                                     onChange={(e) => setOriginalLang(e.target.value)}
                                                 />
-                                            <TomSelect
-                                                value={vLang}
-                                                onChange={setVLang}
-                                                options={{
-                                                    placeholder: '',
-                                                }}
-                                                className="w-full"
-                                                multiple
-                                            >
-                                                {langOptions.map((option) => (
-                                                    <option key={option} value={option}>
-                                                        {option}
-                                                    </option>
-                                                ))}
-                                            </TomSelect>
-                                        </div>
+                                                <TomSelect
+                                                    value={vLang}
+                                                    onChange={setVLang}
+                                                    options={{
+                                                        placeholder: '',
+                                                    }}
+                                                    className="w-full"
+                                                    multiple
+                                                >
+                                                    {langOptions.map((option) => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </TomSelect>
+                                            </div>
 
                                         </div>
                                     </div>

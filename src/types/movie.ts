@@ -43,6 +43,14 @@ export interface Actor {
   image: string;
 }
 
+export type IFetchMoviePage = {
+  status: string;
+  limit: number;
+  order: string
+  cursor: string;
+};
+
+
 export interface IAddMovieRequest {
   name: string;
   trailer: string;
@@ -60,3 +68,4 @@ export interface IAddMovieRequest {
   rating_code: string;
   length: number;
 }
+

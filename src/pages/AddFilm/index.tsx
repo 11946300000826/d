@@ -200,7 +200,7 @@ function Main() {
                 </div>
                 <div className="mt-3.5 grid grid-cols-12 xl:grid-cols-10 gap-y-7 lg:gap-y-10 gap-x-6">
                     <div className="relative flex flex-col col-span-12 lg:col-span-9 xl:col-span-8 gap-y-7">
-                        <div className="flex h-[40rem] p-5 box box--stacked max-h-[500px]">
+                        <div className="invisible">
                             <Notification
                                 getRef={(el) => {
                                     bNotification.current = el;

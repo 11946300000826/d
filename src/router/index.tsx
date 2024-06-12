@@ -1,52 +1,56 @@
-import { useRoutes } from "react-router-dom";
+import { useRoutes } from 'react-router-dom';
 
-import Layout from "../themes";
-import Home from "../pages/Home";
-import FilmGrid from "../pages/FilmGrid";
-import FilmDetail from "../pages/FilmDetail";
-import AddFilm from "../pages/AddFilm";
-import Theater from "../pages/Theater";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+import Layout from '../themes';
+import Home from '../pages/Home';
+import FilmGrid from '../pages/FilmGrid';
+import FilmDetail from '../pages/FilmDetail';
+import AddFilm from '../pages/AddFilm';
+import Theater from '../pages/Theater';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import UpdateFilm from '../pages/UpdateFilm';
 
 function Router() {
   const routes = [
     {
-      path: "/",
+      path: '/',
       element: <Layout />,
       children: [
         {
-          path: "/",
+          path: '/',
           element: <Home />,
         },
         {
-          path: "film",
+          path: 'film',
           element: <FilmGrid />,
         },
         {
-          path: "film/:id",
+          path: 'film/:id',
           element: <FilmDetail />,
         },
         {
-            path: "add-film",
-            element: <AddFilm />,
+          path: 'add-film',
+          element: <AddFilm />,
         },
         {
-          path: "theater",
+          path: 'update-film/:id',
+          element: <UpdateFilm />,
+        },
+        {
+          path: 'theater',
           element: <Theater />,
         },
         {
-          path: "users",
+          path: 'users',
         },
-
       ],
     },
     {
-      path: "login",
+      path: 'login',
       element: <Login />,
     },
     {
-      path: "register",
+      path: 'register',
       element: <Register />,
     },
   ];

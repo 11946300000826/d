@@ -8,6 +8,7 @@ import AddFilm from "../pages/AddFilm";
 import Theater from "../pages/Theater";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import UpdateFilm from "../pages/UpdateFilm";
 
 function Router() {
   const routes = [
@@ -30,6 +31,10 @@ function Router() {
         {
             path: "add-film",
             element: <AddFilm />,
+        },
+        {
+          path: 'update-film/:id',
+          element: <UpdateFilm />,
         },
         {
           path: "theater",

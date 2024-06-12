@@ -250,13 +250,16 @@ function Main() {
                           />{' '}
                           View
                         </Link>
-                        <a className="flex items-center mr-3" href="#">
+                        <Link
+                            className="flex mr-5 text-primary"
+                            to={`/update-film/${movie.id}`}
+                        >
                           <Lucide
-                            icon="CheckSquare"
-                            className="w-4 h-4 stroke-[1.3] mr-1.5"
-                          />{' '}
+                              icon="CheckSquare"
+                              className="w-4 h-4 stroke-[1.3] mr-1.5"
+                          />
                           Edit
-                        </a>
+                        </Link>
                         <Preview>
                           <button
                             className="flex items-center text-danger"
